@@ -4,19 +4,21 @@ App = React.createClass({
   //mixin making getMeteorData work
   mixins: [ReactMeteorData],
 
-  getMeteorData() {
-    return {
-      tasks: Tasks.find({}, {sort: {createdAt: -1}}).fetch()
-    }
+  getInitialState() {
+      return {
+        hideCompleted: false
+      }
   },
 
-  // getTasks() {
-  //   return [
-  //     { _id: 1, text: "Task 1"},
-  //     { _id: 2, text: "Task 2"},
-  //     { _id: 3, text: "Task 3"}
-  //   ];
-  // },
+  getMeteorData() {
+    let query = {};
+    if (this.state.hideCompleted) {
+      query = {checked: {$ne: true}};
+    }
+    return {
+      tasks: Tasks.find(query, {sort: {createdAt: -1}}).fetch()
+    };
+  },
 
   handleSubmit(event) {
     event.preventDefault();
@@ -31,6 +33,12 @@ App = React.createClass({
     React.findDOMNode(this.refs.textInput).value = "";
   },
 
+  toggleHideCompleted(){
+    this.setState({
+      hideCompleted: ! this.state.hideCompleted
+    });
+  },
+
   renderTasks() {
     return this.data.tasks.map((task) => {
       return <Task key={task._id} task={task} />;
@@ -41,7 +49,16 @@ App = React.createClass({
     return (
       <div className="container">
         <header>
-          <h1>Todooz</h1>
+          <h1>Toodooz</h1>
+
+          <label className = "hide-completed">
+            <input
+              type = "checkbox"
+              readOnly = {true}
+              checked = {this.state.hideCompleted}
+              onClick = {this.toggleHideCompleted} />
+              Hide Completed Tasks
+          </label>
 
           <form className="new-task" onSubmit={this.handleSubmit}>
             <input
